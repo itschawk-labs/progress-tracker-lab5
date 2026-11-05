@@ -1,0 +1,103 @@
+<main class="container">
+  <header class="page-header">
+    <p class="eyebrow">IT 6203 · Lab 5</p>
+    <h1>Project Progress Tracker</h1>
+    <p>Manage persistent project records with Angular, Express and MongoDB.</p>
+  </header>
+
+  @if (message) { <p class="notice success" role="status">{{ message }}</p> }
+  @if (errorMessage) { <p class="notice error" role="alert">{{ errorMessage }}</p> }
+
+  <section class="panel" aria-labelledby="form-heading">
+    <div class="panel-heading">
+      <h2 id="form-heading">{{ editingId ? 'Edit project' : 'Create project' }}</h2>
+      @if (editingId) { <span class="pill">Editing existing record</span> }
+    </div>
+    <form [formGroup]="projectForm" (ngSubmit)="saveProject()">
+      <div class="form-grid">
+        <label>Project name *
+          <input formControlName="name" maxlength="120" placeholder="e.g., SIEM Deployment" />
+        </label>
+        <label>Project manager *
+          <input formControlName="manager" placeholder="e.g., Jordan Lee" />
+        </label>
+        <label class="span-2">Description *
+          <textarea formControlName="description" rows="3" placeholder="Describe the project"></textarea>
+        </label>
+        <label>Start date *
+          <input type="date" formControlName="startDate" />
+        </label>
+        <label>Due date *
+          <input type="date" formControlName="dueDate" />
+        </label>
+        <label>Status *
+          <select formControlName="status">
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </label>
+        <label>Priority *
+          <select formControlName="priority">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+        </label>
+        <label>Completion (%) *
+          <input type="number" formControlName="completion" min="0" max="100" step="1" />
+        </label>
+      </div>
+      <div class="actions">
+        <button type="submit" class="primary" [disabled]="busy">{{ editingId ? 'Save changes' : 'Create project' }}</button>
+        <button type="button" class="secondary" (click)="resetForm()">Clear form</button>
+      </div>
+      @if (projectForm.invalid && projectForm.touched) {
+        <p class="hint">Complete all required fields. Completion must be between 0 and 100.</p>
+      }
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="list-heading">
+    <div class="panel-heading">
+      <h2 id="list-heading">Saved projects ({{ projects.length }})</h2>
+      <button type="button" class="secondary" (click)="loadProjects()">Refresh list</button>
+    </div>
+    @if (projects.length === 0) {
+      <p class="empty">No projects saved yet. Create a project above.</p>
+    } @else {
+      <div class="project-list">
+        @for (project of projects; track project._id) {
+          <article class="project-row">
+            <div class="project-info">
+              <h3>{{ project.name }}</h3>
+              <p>{{ project.status }} · {{ project.priority }} priority · {{ project.completion }}% complete</p>
+            </div>
+            <div class="actions small-actions">
+              <button type="button" class="secondary" (click)="viewProject(project)">View</button>
+              <button type="button" class="secondary" (click)="editProject(project)">Edit</button>
+              <button type="button" class="danger" [disabled]="busy" (click)="deleteProject(project)">Delete</button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </section>
+
+  @if (selectedProject; as detail) {
+    <section class="panel" aria-labelledby="details-heading">
+      <h2 id="details-heading">Project details</h2>
+      <dl class="details-grid">
+        <dt>Project name</dt><dd>{{ detail.name }}</dd>
+        <dt>Description</dt><dd>{{ detail.description }}</dd>
+        <dt>Manager</dt><dd>{{ detail.manager }}</dd>
+        <dt>Start date</dt><dd>{{ detail.startDate.slice(0, 10) }}</dd>
+        <dt>Due date</dt><dd>{{ detail.dueDate.slice(0, 10) }}</dd>
+        <dt>Status</dt><dd>{{ detail.status }}</dd>
+        <dt>Priority</dt><dd>{{ detail.priority }}</dd>
+        <dt>Completion</dt><dd>{{ detail.completion }}%</dd>
+        <dt>MongoDB ID</dt><dd class="record-id">{{ detail._id }}</dd>
+      </dl>
+    </section>
+  }
+</main>
